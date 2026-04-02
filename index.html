@@ -1,1 +1,965 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><title>AIShield</title></head><body><h1>AIShield</h1></body></html>
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIShield — Автономний захист транспорту вiд FPV-дронiв</title>
+<meta name="description" content="AIShield — система активного захисту транспортних засобiв вiд атак FPV-дронiв. Виявлення, класифiкацiя та перехоплення за менше нiж 1 секунду.">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg-primary:#0a0c0f;
+  --bg-secondary:#0d1117;
+  --bg-card:#111820;
+  --accent:#00ff88;
+  --accent-dim:#00cc6a;
+  --accent-glow:rgba(0,255,136,0.15);
+  --text-primary:#e6edf3;
+  --text-secondary:#8b949e;
+  --border:#1e2a3a;
+  --danger:#ff4444;
+  --warning:#ffaa00;
+  --font-mono:'Courier New',monospace;
+  --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  background:var(--bg-primary);
+  color:var(--text-primary);
+  font-family:var(--font-sans);
+  line-height:1.6;
+  overflow-x:hidden;
+}
+
+/* GRID OVERLAY */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    linear-gradient(rgba(0,255,136,0.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,255,136,0.02) 1px,transparent 1px);
+  background-size:60px 60px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* SCANLINE */
+body::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events:none;
+  z-index:9999;
+}
+
+/* NAV */
+.nav{
+  position:fixed;top:0;left:0;right:0;
+  z-index:1000;
+  background:rgba(10,12,15,0.9);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.nav-logo{
+  font-family:var(--font-mono);
+  font-size:1.2rem;
+  font-weight:700;
+  color:var(--accent);
+  letter-spacing:2px;
+  text-transform:uppercase;
+}
+.nav-logo span{color:var(--text-primary)}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{
+  color:var(--text-secondary);
+  text-decoration:none;
+  font-size:0.85rem;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  transition:color 0.3s;
+  font-family:var(--font-mono);
+}
+.nav-links a:hover{color:var(--accent)}
+.nav-burger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:8px}
+.nav-burger span{display:block;width:24px;height:2px;background:var(--accent);transition:0.3s}
+
+/* HERO PARALLAX */
+.hero{
+  position:relative;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  padding:6rem 2rem 4rem;
+}
+.hero-bg{
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(ellipse at 20% 50%,rgba(0,255,136,0.08) 0%,transparent 50%),
+    radial-gradient(ellipse at 80% 20%,rgba(0,100,255,0.05) 0%,transparent 50%),
+    radial-gradient(ellipse at 50% 80%,rgba(255,68,68,0.03) 0%,transparent 50%);
+  z-index:0;
+}
+.hero-particles{position:absolute;inset:0;z-index:1}
+.hero-content{
+  position:relative;
+  z-index:2;
+  text-align:center;
+  max-width:900px;
+}
+.hero-badge{
+  display:inline-block;
+  font-family:var(--font-mono);
+  font-size:0.75rem;
+  color:var(--accent);
+  border:1px solid var(--accent);
+  padding:0.4rem 1.2rem;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:2rem;
+  background:var(--accent-glow);
+}
+.hero h1{
+  font-family:var(--font-mono);
+  font-size:clamp(2.5rem,6vw,5rem);
+  font-weight:700;
+  letter-spacing:-1px;
+  line-height:1.1;
+  margin-bottom:1.5rem;
+}
+.hero h1 .accent{color:var(--accent)}
+.hero-sub{
+  font-size:clamp(1rem,2vw,1.3rem);
+  color:var(--text-secondary);
+  max-width:680px;
+  margin:0 auto 2.5rem;
+  line-height:1.7;
+}
+.hero-stats{
+  display:flex;
+  justify-content:center;
+  gap:3rem;
+  flex-wrap:wrap;
+  margin-bottom:3rem;
+}
+.hero-stat{text-align:center}
+.hero-stat .val{
+  font-family:var(--font-mono);
+  font-size:2.5rem;
+  font-weight:700;
+  color:var(--accent);
+  display:block;
+}
+.hero-stat .label{
+  font-size:0.8rem;
+  color:var(--text-secondary);
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+.hero-cta{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.btn{
+  display:inline-flex;
+  align-items:center;
+  gap:0.5rem;
+  padding:0.9rem 2rem;
+  font-family:var(--font-mono);
+  font-size:0.9rem;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  text-decoration:none;
+  border:none;
+  cursor:pointer;
+  transition:all 0.3s;
+}
+.btn-primary{
+  background:var(--accent);
+  color:var(--bg-primary);
+  font-weight:700;
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));
+}
+.btn-primary:hover{background:#33ffaa;box-shadow:0 0 30px var(--accent-glow)}
+.btn-secondary{
+  background:transparent;
+  color:var(--accent);
+  border:1px solid var(--border);
+}
+.btn-secondary:hover{border-color:var(--accent);background:var(--accent-glow)}
+
+/* SECTIONS */
+section{position:relative;padding:6rem 2rem}
+.container{max-width:1200px;margin:0 auto}
+
+.section-label{
+  font-family:var(--font-mono);
+  font-size:0.75rem;
+  color:var(--accent);
+  text-transform:uppercase;
+  letter-spacing:3px;
+  margin-bottom:1rem;
+}
+.section-title{
+  font-family:var(--font-mono);
+  font-size:clamp(1.8rem,4vw,2.8rem);
+  font-weight:700;
+  margin-bottom:1rem;
+  line-height:1.2;
+}
+.section-desc{
+  color:var(--text-secondary);
+  max-width:600px;
+  margin-bottom:3rem;
+  font-size:1.05rem;
+}
+
+/* THREAT SECTION */
+.threat{background:var(--bg-secondary)}
+.threat-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;
+}
+.threat-card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  padding:2rem;
+  position:relative;
+  overflow:hidden;
+  transition:border-color 0.3s;
+}
+.threat-card:hover{border-color:var(--accent)}
+.threat-card::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;
+  width:3px;height:100%;
+  background:var(--danger);
+}
+.threat-card.solved::before{background:var(--accent)}
+.threat-icon{
+  font-family:var(--font-mono);
+  font-size:0.7rem;
+  color:var(--danger);
+  text-transform:uppercase;
+  letter-spacing:2px;
+  margin-bottom:1rem;
+}
+.threat-card.solved .threat-icon{color:var(--accent)}
+.threat-card h3{font-size:1.1rem;margin-bottom:0.75rem;font-family:var(--font-mono)}
+.threat-card p{color:var(--text-secondary);font-size:0.9rem;line-height:1.7}
+
+/* HOW IT WORKS */
+.how{background:var(--bg-primary)}
+.timeline{position:relative;max-width:800px}
+.timeline::before{
+  content:'';
+  position:absolute;
+  left:24px;top:0;bottom:0;
+  width:2px;
+  background:linear-gradient(var(--accent),var(--border));
+}
+.timeline-item{
+  position:relative;
+  padding-left:72px;
+  margin-bottom:3rem;
+}
+.timeline-dot{
+  position:absolute;
+  left:12px;top:4px;
+  width:26px;height:26px;
+  border:2px solid var(--accent);
+  background:var(--bg-primary);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:var(--font-mono);
+  font-size:0.7rem;
+  color:var(--accent);
+}
+.timeline-time{
+  font-family:var(--font-mono);
+  font-size:0.8rem;
+  color:var(--accent);
+  margin-bottom:0.5rem;
+  letter-spacing:1px;
+}
+.timeline-item h3{font-size:1.2rem;margin-bottom:0.5rem;font-family:var(--font-mono)}
+.timeline-item p{color:var(--text-secondary);font-size:0.95rem;line-height:1.7}
+
+/* SPECS */
+.specs{background:var(--bg-secondary)}
+.specs-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:1.5rem;
+}
+.spec-card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  padding:2rem;
+  transition:border-color 0.3s,transform 0.3s;
+}
+.spec-card:hover{border-color:var(--accent);transform:translateY(-4px)}
+.spec-header{
+  font-family:var(--font-mono);
+  font-size:0.7rem;
+  color:var(--accent);
+  text-transform:uppercase;
+  letter-spacing:2px;
+  margin-bottom:1rem;
+  padding-bottom:0.75rem;
+  border-bottom:1px solid var(--border);
+}
+.spec-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  padding:0.5rem 0;
+  border-bottom:1px solid rgba(30,42,58,0.5);
+}
+.spec-row:last-child{border:none}
+.spec-key{color:var(--text-secondary);font-size:0.85rem}
+.spec-val{
+  font-family:var(--font-mono);
+  font-weight:600;
+  font-size:0.9rem;
+  color:var(--text-primary);
+  text-align:right;
+}
+
+/* FEATURES */
+.features{background:var(--bg-primary)}
+.feat-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
+  gap:1.5rem;
+}
+.feat-card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  padding:2.5rem 2rem;
+  position:relative;
+  transition:border-color 0.3s;
+}
+.feat-card:hover{border-color:var(--accent)}
+.feat-num{
+  font-family:var(--font-mono);
+  font-size:3rem;
+  font-weight:700;
+  color:rgba(0,255,136,0.1);
+  position:absolute;
+  top:1rem;right:1.5rem;
+}
+.feat-card h3{
+  font-family:var(--font-mono);
+  font-size:1.1rem;
+  margin-bottom:0.75rem;
+}
+.feat-card p{color:var(--text-secondary);font-size:0.9rem;line-height:1.7}
+
+/* MODES */
+.modes{background:var(--bg-secondary)}
+.modes-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:1.5rem;
+}
+.mode-card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  padding:2rem;
+  text-align:center;
+  transition:border-color 0.3s;
+}
+.mode-card:hover{border-color:var(--accent)}
+.mode-indicator{
+  width:12px;height:12px;
+  border-radius:50%;
+  margin:0 auto 1.5rem;
+  animation:pulse-dot 2s infinite;
+}
+.mode-auto .mode-indicator{background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.mode-semi .mode-indicator{background:var(--warning);box-shadow:0 0 12px var(--warning)}
+.mode-obs .mode-indicator{background:#6688ff;box-shadow:0 0 12px #6688ff}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:0.4}}
+.mode-card h3{font-family:var(--font-mono);font-size:1.1rem;margin-bottom:0.75rem}
+.mode-card p{color:var(--text-secondary);font-size:0.9rem;line-height:1.7}
+
+/* INTEGRATION */
+.integration{background:var(--bg-primary)}
+.int-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:1rem;
+}
+.int-item{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  padding:1.5rem;
+  font-family:var(--font-mono);
+  font-size:0.85rem;
+  display:flex;
+  align-items:center;
+  gap:1rem;
+  transition:border-color 0.3s;
+}
+.int-item:hover{border-color:var(--accent)}
+.int-dot{
+  width:8px;height:8px;
+  background:var(--accent);
+  flex-shrink:0;
+}
+
+/* CTA SECTION */
+.cta-section{
+  background:var(--bg-secondary);
+  text-align:center;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.cta-section .section-title{margin-bottom:1.5rem}
+.cta-section .section-desc{margin:0 auto 2.5rem;text-align:center}
+
+/* FOOTER */
+.footer{
+  background:var(--bg-primary);
+  border-top:1px solid var(--border);
+  padding:3rem 2rem;
+}
+.footer-inner{
+  max-width:1200px;
+  margin:0 auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:1rem;
+}
+.footer-logo{
+  font-family:var(--font-mono);
+  font-size:1rem;
+  color:var(--accent);
+  letter-spacing:2px;
+}
+.footer-copy{
+  color:var(--text-secondary);
+  font-size:0.8rem;
+  font-family:var(--font-mono);
+}
+.footer-links{display:flex;gap:1.5rem}
+.footer-links a{
+  color:var(--text-secondary);
+  font-size:0.8rem;
+  text-decoration:none;
+  font-family:var(--font-mono);
+  transition:color 0.3s;
+}
+.footer-links a:hover{color:var(--accent)}
+
+/* PARALLAX DATA ATTR ELEMENTS */
+[data-parallax]{will-change:transform;transition:transform 0.1s linear}
+
+/* SCROLL REVEAL */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity 0.8s,transform 0.8s}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* MOBILE NAV */
+.nav-mobile{
+  display:none;
+  position:fixed;
+  top:64px;left:0;right:0;
+  background:rgba(10,12,15,0.98);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:1.5rem 2rem;
+  z-index:999;
+}
+.nav-mobile.open{display:block}
+.nav-mobile a{
+  display:block;
+  color:var(--text-secondary);
+  text-decoration:none;
+  font-family:var(--font-mono);
+  font-size:0.9rem;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  padding:0.75rem 0;
+  border-bottom:1px solid var(--border);
+  transition:color 0.3s;
+}
+.nav-mobile a:last-child{border:none}
+.nav-mobile a:hover{color:var(--accent)}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .nav-links{display:none}
+  .nav-burger{display:flex}
+  .hero-stats{gap:1.5rem}
+  .hero-stat .val{font-size:2rem}
+  section{padding:4rem 1.25rem}
+  .feat-grid{grid-template-columns:1fr}
+  .timeline::before{left:16px}
+  .timeline-item{padding-left:52px}
+  .timeline-dot{left:4px;width:24px;height:24px}
+  .footer-inner{flex-direction:column;text-align:center}
+}
+@media(max-width:480px){
+  .hero h1{font-size:2rem}
+  .hero-stats{flex-direction:column;gap:1rem}
+  .nav{padding:0 1rem}
+}
+
+/* RADAR ANIMATION */
+.radar-wrapper{
+  position:absolute;
+  right:-5%;top:10%;
+  width:400px;height:400px;
+  opacity:0.08;
+  z-index:1;
+}
+.radar-circle{
+  position:absolute;
+  border:1px solid var(--accent);
+  border-radius:50%;
+  left:50%;top:50%;
+  transform:translate(-50%,-50%);
+}
+.radar-circle:nth-child(1){width:100%;height:100%}
+.radar-circle:nth-child(2){width:66%;height:66%}
+.radar-circle:nth-child(3){width:33%;height:33%}
+.radar-sweep{
+  position:absolute;
+  top:50%;left:50%;
+  width:50%;height:2px;
+  background:linear-gradient(90deg,var(--accent),transparent);
+  transform-origin:left center;
+  animation:radar-spin 3s linear infinite;
+}
+@keyframes radar-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* HUD CORNERS */
+.hud-box{position:relative}
+.hud-box::before,.hud-box::after{
+  content:'';position:absolute;
+  width:20px;height:20px;
+  border-color:var(--accent);
+  border-style:solid;
+  border-width:0;
+  opacity:0.4;
+}
+.hud-box::before{top:-1px;left:-1px;border-top-width:2px;border-left-width:2px}
+.hud-box::after{bottom:-1px;right:-1px;border-bottom-width:2px;border-right-width:2px}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">AI<span>SHIELD</span></div>
+  <ul class="nav-links">
+    <li><a href="#threat">Загроза</a></li>
+    <li><a href="#how">Як працює</a></li>
+    <li><a href="#specs">Характеристики</a></li>
+    <li><a href="#features">Можливостi</a></li>
+    <li><a href="#modes">Режими</a></li>
+    <li><a href="#contact">Контакт</a></li>
+  </ul>
+  <button class="nav-burger" id="burger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-mobile" id="mobileNav">
+  <a href="#threat">Загроза</a>
+  <a href="#how">Як працює</a>
+  <a href="#specs">Характеристики</a>
+  <a href="#features">Можливостi</a>
+  <a href="#modes">Режими</a>
+  <a href="#contact">Контакт</a>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-bg" data-parallax="0.3"></div>
+  <div class="radar-wrapper" data-parallax="0.15">
+    <div class="radar-circle"></div>
+    <div class="radar-circle"></div>
+    <div class="radar-circle"></div>
+    <div class="radar-sweep"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-badge">Active Defense System v3.0</div>
+    <h1>Автономний захист<br>вiд <span class="accent">FPV-дронiв</span></h1>
+    <p class="hero-sub">
+      Мультиспектральне виявлення, ШI-класифiкацiя та кiнетичне перехоплення
+      ворожих безпiлотникiв за менше нiж 1 секунду.
+      Повний захист транспорту на 360 градусiв.
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="val">&lt;1</span>
+        <span class="label">сек. реакцiя</span>
+      </div>
+      <div class="hero-stat">
+        <span class="val">360</span>
+        <span class="label">градусiв огляду</span>
+      </div>
+      <div class="hero-stat">
+        <span class="val">500</span>
+        <span class="label">м. виявлення</span>
+      </div>
+      <div class="hero-stat">
+        <span class="val">94%</span>
+        <span class="label">точнiсть ШI</span>
+      </div>
+    </div>
+    <div class="hero-cta">
+      <a href="#contact" class="btn btn-primary">Запросити демо</a>
+      <a href="#how" class="btn btn-secondary">Як це працює</a>
+    </div>
+  </div>
+</section>
+
+<!-- THREAT -->
+<section class="threat" id="threat">
+  <div class="container">
+    <div class="section-label reveal">// Аналiз загрози</div>
+    <h2 class="section-title reveal">Чому РЕБ недостатньо</h2>
+    <p class="section-desc reveal">
+      Сучаснi FPV-дрони здатнi працювати в автономному режимi,
+      повнiстю iгноруючи радiоелектронне подавлення.
+    </p>
+    <div class="threat-grid">
+      <div class="threat-card reveal">
+        <div class="threat-icon">[ Проблема ]</div>
+        <h3>Автономнi дрони</h3>
+        <p>FPV-дрони з автопiлотом не залежать вiд радiоканалу керування. Глушiння сигналу не зупиняє дрон, що летить за заданими координатами.</p>
+      </div>
+      <div class="threat-card reveal">
+        <div class="threat-icon">[ Проблема ]</div>
+        <h3>Швидкiсть атаки</h3>
+        <p>Бойовий FPV-дрон рухається зi швидкiстю 120-160 км/год. Людина фiзично не здатна вчасно реагувати на загрозу з такою швидкiстю.</p>
+      </div>
+      <div class="threat-card solved reveal">
+        <div class="threat-icon">[ Рiшення ]</div>
+        <h3>AIShield</h3>
+        <p>Фiзичне перехоплення кевларовою сiткою працює незалежно вiд режиму польоту дрона. Час реакцiї системи — менше 1 секунди вiд виявлення до перехоплення.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="container">
+    <div class="section-label reveal">// Принцип дiї</div>
+    <h2 class="section-title reveal">Вiд виявлення до перехоплення</h2>
+    <p class="section-desc reveal">
+      Повний цикл нейтралiзацiї загрози за чотири етапи.
+    </p>
+    <div class="timeline">
+      <div class="timeline-item reveal">
+        <div class="timeline-dot">01</div>
+        <div class="timeline-time">&lt; 200 мс</div>
+        <h3>Виявлення</h3>
+        <p>4 ширококутнi камери (4K, 60 fps), 2 тепловiзори та FMCW-радар 60 ГГц забезпечують безперервне спостереження у всiх напрямках. Мiкро-Доплер аналiз вiдрiзняє обертання пропелерiв дрона вiд птахiв.</p>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-dot">02</div>
+        <div class="timeline-time">&lt; 500 мс</div>
+        <h3>Класифiкацiя</h3>
+        <p>Нейромережа AIShield-Det v3 на базi YOLOv8 (NVIDIA Jetson Orin, 275 TOPS) класифiкує цiль серед 5 категорiй: бойовий FPV, розвiдувальний, цивiльний, великий крилатий, птах. Точнiсть — 94%+.</p>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-dot">03</div>
+        <div class="timeline-time">&lt; 700 мс</div>
+        <h3>Супровiд та прицiлювання</h3>
+        <p>Алгоритми ByteTrack та DeepSORT ведуть до 10 цiлей одночасно. Фiльтр Калмана прогнозує траєкторiю. Сервоприводи наводять пускову установку з точнiстю 0.5 градуса з урахуванням вiтру.</p>
+      </div>
+      <div class="timeline-item reveal">
+        <div class="timeline-dot">04</div>
+        <div class="timeline-time">&lt; 1 сек</div>
+        <h3>Перехоплення</h3>
+        <p>Кевларова сiтка 3x3 м вилiтає зi швидкiстю 25-40 м/с та повнiстю розкривається за 80-120 мс. Дрон фiзично захоплюється та нейтралiзується без побiчних ушкоджень.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPECS -->
+<section class="specs" id="specs">
+  <div class="container">
+    <div class="section-label reveal">// Технiчнi характеристики</div>
+    <h2 class="section-title reveal">Вiйськовий клас надiйностi</h2>
+    <div class="specs-grid">
+      <div class="spec-card hud-box reveal">
+        <div class="spec-header">Виявлення</div>
+        <div class="spec-row"><span class="spec-key">Дальнiсть (день)</span><span class="spec-val">500 м</span></div>
+        <div class="spec-row"><span class="spec-key">Дальнiсть (нiч, IЧ)</span><span class="spec-val">300 м</span></div>
+        <div class="spec-row"><span class="spec-key">Класифiкацiя</span><span class="spec-val">300 м</span></div>
+        <div class="spec-row"><span class="spec-key">Огляд по горизонту</span><span class="spec-val">360</span></div>
+        <div class="spec-row"><span class="spec-key">Огляд по вертикалi</span><span class="spec-val">-5 .. +85</span></div>
+      </div>
+      <div class="spec-card hud-box reveal">
+        <div class="spec-header">Перехоплення</div>
+        <div class="spec-row"><span class="spec-key">Пусковi модулi</span><span class="spec-val">8</span></div>
+        <div class="spec-row"><span class="spec-key">Ефективна дальнiсть</span><span class="spec-val">12-20 м</span></div>
+        <div class="spec-row"><span class="spec-key">Швидкiсть вильоту</span><span class="spec-val">25-40 м/с</span></div>
+        <div class="spec-row"><span class="spec-key">Час розкриття сiтки</span><span class="spec-val">80-120 мс</span></div>
+        <div class="spec-row"><span class="spec-key">Перезарядка</span><span class="spec-val">15-20 сек</span></div>
+      </div>
+      <div class="spec-card hud-box reveal">
+        <div class="spec-header">Система</div>
+        <div class="spec-row"><span class="spec-key">Процесор</span><span class="spec-val">Jetson Orin</span></div>
+        <div class="spec-row"><span class="spec-key">Продуктивнiсть</span><span class="spec-val">275 TOPS</span></div>
+        <div class="spec-row"><span class="spec-key">Живлення</span><span class="spec-val">12/24V DC</span></div>
+        <div class="spec-row"><span class="spec-key">Споживання</span><span class="spec-val">35-180 Вт</span></div>
+        <div class="spec-row"><span class="spec-key">Загальна вага</span><span class="spec-val">~43 кг</span></div>
+      </div>
+      <div class="spec-card hud-box reveal">
+        <div class="spec-header">Середовище</div>
+        <div class="spec-row"><span class="spec-key">Температура</span><span class="spec-val">-40..+50 C</span></div>
+        <div class="spec-row"><span class="spec-key">Вологiсть</span><span class="spec-val">до 98%</span></div>
+        <div class="spec-row"><span class="spec-key">Ударостiйкiсть</span><span class="spec-val">15g</span></div>
+        <div class="spec-row"><span class="spec-key">Висота</span><span class="spec-val">до 4000 м</span></div>
+        <div class="spec-row"><span class="spec-key">Встановлення</span><span class="spec-val">4-6 год</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-label reveal">// Ключовi переваги</div>
+    <h2 class="section-title reveal">Чому AIShield</h2>
+    <div class="feat-grid">
+      <div class="feat-card hud-box reveal">
+        <div class="feat-num">01</div>
+        <h3>Мультиспектральне злиття</h3>
+        <p>Оптика, тепловiзор та радар працюють одночасно. Якщо один канал деградує через погоднi умови — iншi компенсують. Виявлення працює в дощ, туман, снiг та повну темряву.</p>
+      </div>
+      <div class="feat-card hud-box reveal">
+        <div class="feat-num">02</div>
+        <h3>Фiзичне перехоплення</h3>
+        <p>Кевларова сiтка захоплює дрон цiлим — без уламкiв, без побiчних ушкоджень, без ризику для особового складу. Захоплений дрон можна дослiдити для розвiдки.</p>
+      </div>
+      <div class="feat-card hud-box reveal">
+        <div class="feat-num">03</div>
+        <h3>Ретрофiт на будь-який транспорт</h3>
+        <p>Встановлюється на позашляховики, пiкапи, фургони та бронетехнiку. Достатньо 120 кг вантажопiдйомностi даху та стандартного 12/24V живлення.</p>
+      </div>
+      <div class="feat-card hud-box reveal">
+        <div class="feat-num">04</div>
+        <h3>Ешелонований захист</h3>
+        <p>Працює разом з РЕБ-системами як додатковий фiзичний рубiж оборони. Там, де глушiння не допомагає — AIShield перехоплює кiнетично.</p>
+      </div>
+      <div class="feat-card hud-box reveal">
+        <div class="feat-num">05</div>
+        <h3>10+ цiлей одночасно</h3>
+        <p>Система одночасно вiдстежує до 10 загроз з рiзних напрямкiв, автоматично прiоритезуючи за рiвнем небезпеки та вiдстанню.</p>
+      </div>
+      <div class="feat-card hud-box reveal">
+        <div class="feat-num">06</div>
+        <h3>Повна автономнiсть</h3>
+        <p>В автоматичному режимi система працює без участi оператора. Виявлення, класифiкацiя та перехоплення вiдбуваються автономно 24/7.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODES -->
+<section class="modes" id="modes">
+  <div class="container">
+    <div class="section-label reveal">// Режими роботи</div>
+    <h2 class="section-title reveal">Три рiвнi контролю</h2>
+    <p class="section-desc reveal">
+      Гнучке налаштування рiвня автономностi вiдповiдно до тактичної ситуацiї.
+    </p>
+    <div class="modes-grid">
+      <div class="mode-card mode-auto reveal">
+        <div class="mode-indicator"></div>
+        <h3>Автоматичний</h3>
+        <p>Повна автономнiсть. Система самостiйно виявляє, класифiкує та перехоплює загрози. Оператор отримує сповiщення пiсля кожного перехоплення. Рекомендовано для зон високої загрози.</p>
+      </div>
+      <div class="mode-card mode-semi reveal">
+        <div class="mode-indicator"></div>
+        <h3>Напiвавтоматичний</h3>
+        <p>Система виявляє та класифiкує загрозу автоматично. Оператор пiдтверджує перехоплення натисканням кнопки. Вiкно рiшення — 1-2 секунди. Рекомендований стандартний режим.</p>
+      </div>
+      <div class="mode-card mode-obs reveal">
+        <div class="mode-indicator"></div>
+        <h3>Спостереження</h3>
+        <p>Тiльки виявлення та супровiд. Пусковi установки вимкненi. Всi данi записуються для аналiзу. Використовується для навчання, зон низької загрози та прихованих операцiй.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATION -->
+<section class="integration" id="integration">
+  <div class="container">
+    <div class="section-label reveal">// Iнтеграцiя</div>
+    <h2 class="section-title reveal">Сумiснiсть та пiдключення</h2>
+    <p class="section-desc reveal">
+      Вiдкрита архiтектура для iнтеграцiї з iснуючими системами.
+    </p>
+    <div class="int-grid">
+      <div class="int-item reveal"><div class="int-dot"></div>CAN-bus iнтеграцiя</div>
+      <div class="int-item reveal"><div class="int-dot"></div>Ethernet / Wi-Fi</div>
+      <div class="int-item reveal"><div class="int-dot"></div>gRPC API</div>
+      <div class="int-item reveal"><div class="int-dot"></div>12V / 24V DC живлення</div>
+      <div class="int-item reveal"><div class="int-dot"></div>SUV / Пiкап / Фургон</div>
+      <div class="int-item reveal"><div class="int-dot"></div>Бронетехнiка</div>
+      <div class="int-item reveal"><div class="int-dot"></div>Планшет оператора 10"</div>
+      <div class="int-item reveal"><div class="int-dot"></div>Резервне LiFePO4</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contact">
+  <div class="container">
+    <div class="section-label reveal">// Зв'язок</div>
+    <h2 class="section-title reveal">Запросити демонстрацiю</h2>
+    <p class="section-desc reveal">
+      Зв'яжiться з нами для отримання детальної технiчної документацiї,
+      комерцiйної пропозицiї або органiзацiї польових випробувань.
+    </p>
+    <div class="hero-cta reveal">
+      <a href="mailto:contact@aishield.highfunk.uk" class="btn btn-primary">Написати нам</a>
+      <a href="#specs" class="btn btn-secondary">Документацiя</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">AISHIELD</div>
+    <div class="footer-links">
+      <a href="#threat">Загроза</a>
+      <a href="#specs">Характеристики</a>
+      <a href="#contact">Контакт</a>
+    </div>
+    <div class="footer-copy">2024-2026 AIShield. Active Defense Systems.</div>
+  </div>
+</footer>
+
+<script>
+// PARALLAX
+document.addEventListener('scroll',()=>{
+  const sy=window.scrollY;
+  document.querySelectorAll('[data-parallax]').forEach(el=>{
+    const speed=parseFloat(el.dataset.parallax);
+    el.style.transform='translateY('+sy*speed+'px)';
+  });
+});
+
+// SCROLL REVEAL
+const observer=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+    }
+  });
+},{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+// MOBILE NAV
+const burger=document.getElementById('burger');
+const mobileNav=document.getElementById('mobileNav');
+burger.addEventListener('click',()=>{
+  mobileNav.classList.toggle('open');
+  const spans=burger.querySelectorAll('span');
+  if(mobileNav.classList.contains('open')){
+    spans[0].style.transform='rotate(45deg) translate(5px,5px)';
+    spans[1].style.opacity='0';
+    spans[2].style.transform='rotate(-45deg) translate(5px,-5px)';
+  }else{
+    spans[0].style.transform='';
+    spans[1].style.opacity='';
+    spans[2].style.transform='';
+  }
+});
+mobileNav.querySelectorAll('a').forEach(a=>{
+  a.addEventListener('click',()=>{
+    mobileNav.classList.remove('open');
+    const spans=burger.querySelectorAll('span');
+    spans[0].style.transform='';
+    spans[1].style.opacity='';
+    spans[2].style.transform='';
+  });
+});
+
+// NAV ACCENT ON SCROLL
+const nav=document.querySelector('.nav');
+window.addEventListener('scroll',()=>{
+  nav.style.borderBottomColor=window.scrollY>50?'var(--accent)':'var(--border)';
+});
+
+// HERO PARTICLES
+const canvas=document.createElement('canvas');
+const ctx=canvas.getContext('2d');
+document.querySelector('.hero-particles').appendChild(canvas);
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight}
+resize();
+window.addEventListener('resize',resize);
+
+const particles=[];
+for(let i=0;i<60;i++){
+  particles.push({
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    vx:(Math.random()-0.5)*0.3,
+    vy:(Math.random()-0.5)*0.3,
+    r:Math.random()*1.5+0.5,
+    a:Math.random()*0.3+0.1
+  });
+}
+function animateParticles(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0)p.x=canvas.width;
+    if(p.x>canvas.width)p.x=0;
+    if(p.y<0)p.y=canvas.height;
+    if(p.y>canvas.height)p.y=0;
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,255,136,'+p.a+')';
+    ctx.fill();
+  });
+  for(let i=0;i<particles.length;i++){
+    for(let j=i+1;j<particles.length;j++){
+      const dx=particles[i].x-particles[j].x;
+      const dy=particles[i].y-particles[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<120){
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x,particles[i].y);
+        ctx.lineTo(particles[j].x,particles[j].y);
+        ctx.strokeStyle='rgba(0,255,136,'+(0.06*(1-d/120))+')';
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+</script>
+</body>
+</html>
