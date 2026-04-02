@@ -572,6 +572,7 @@ section{position:relative;padding:6rem 2rem}
   <div class="nav-logo">AI<span>SHIELD</span></div>
   <ul class="nav-links">
     <li><a href="#threat">Загроза</a></li>
+    <li><a href="#arch">Архiтектура</a></li>
     <li><a href="#how">Як працює</a></li>
     <li><a href="#specs">Характеристики</a></li>
     <li><a href="#features">Можливостi</a></li>
@@ -584,6 +585,7 @@ section{position:relative;padding:6rem 2rem}
 </nav>
 <div class="nav-mobile" id="mobileNav">
   <a href="#threat">Загроза</a>
+  <a href="#arch">Архiтектура</a>
   <a href="#how">Як працює</a>
   <a href="#specs">Характеристики</a>
   <a href="#features">Можливостi</a>
@@ -604,7 +606,8 @@ section{position:relative;padding:6rem 2rem}
     <div class="hero-badge">Active Defense System v3.0</div>
     <h1>Автономний захист<br>вiд <span class="accent">FPV-дронiв</span></h1>
     <p class="hero-sub">
-      Мультиспектральне виявлення, ШI-класифiкацiя та кiнетичне перехоплення
+      Три пiдсистеми — оптична детекцiя, FMCW-радар та сiткомет —
+      забезпечують виявлення, класифiкацiю та кiнетичне перехоплення
       ворожих безпiлотникiв за менше нiж 1 секунду.
       Повний захист транспорту на 360 градусiв.
     </p>
@@ -662,6 +665,34 @@ section{position:relative;padding:6rem 2rem}
   </div>
 </section>
 
+<!-- ARCHITECTURE -->
+<section class="features" id="arch">
+  <div class="container">
+    <div class="section-label reveal">// Архiтектура</div>
+    <h2 class="section-title reveal">Три пiдсистеми AIShield</h2>
+    <p class="section-desc reveal">
+      Кожна пiдсистема вирiшує свою задачу. Sensor Fusion об'єднує данi в єдину картину загроз.
+    </p>
+    <div class="modes-grid">
+      <div class="mode-card mode-auto reveal">
+        <div class="mode-indicator"></div>
+        <h3>ПОД — Оптична детекцiя</h3>
+        <p>4 RGB-камери + 4 тепловiзори (LWIR) + PTZ-камера супроводу. Первинне виявлення та точна класифiкацiя цiлей нейромережею AIShield-Det v3 на NVIDIA Jetson Orin.</p>
+      </div>
+      <div class="mode-card mode-semi reveal">
+        <div class="mode-indicator"></div>
+        <h3>ПРД — Радарна детекцiя</h3>
+        <p>2 модулi FMCW 24 ГГц (Infineon BGT24MTR12) + 1 модуль 60 ГГц (TI IWR6843AOP). Точна дальнiсть (0.3 м), швидкiсть по Доплеру, micro-Doppler класифiкацiя. Всепогодна робота.</p>
+      </div>
+      <div class="mode-card mode-obs reveal">
+        <div class="mode-indicator"></div>
+        <h3>ПКП — Сiткомет</h3>
+        <p>8 пускових модулiв з кевларовими сiтками 3x3 м. Пневматичний або пiротехнiчний пуск. Швидкiсть вильоту 25-40 м/с, перезарядка за 15-20 секунд.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- HOW IT WORKS -->
 <section class="how" id="how">
   <div class="container">
@@ -675,7 +706,7 @@ section{position:relative;padding:6rem 2rem}
         <div class="timeline-dot">01</div>
         <div class="timeline-time">&lt; 200 мс</div>
         <h3>Виявлення</h3>
-        <p>4 ширококутнi камери (4K, 60 fps), 2 тепловiзори та FMCW-радар 60 ГГц забезпечують безперервне спостереження у всiх напрямках. Мiкро-Доплер аналiз вiдрiзняє обертання пропелерiв дрона вiд птахiв.</p>
+        <p>Пiдсистема оптичної детекцiї (ПОД): 4 RGB-камери (1920x1080, 60 fps), 4 тепловiзори (LWIR 8-14 мкм, 640x480) та PTZ-камера супроводу (30x зум). Пiдсистема радарної детекцiї (ПРД): 2 модулi FMCW 24 ГГц (Infineon BGT24MTR12, дальнiсть до 300 м) та 1 модуль 60 ГГц (TI IWR6843AOP, роздiльна здатнiсть 3.75 см). Micro-Doppler аналiз вiдрiзняє обертання пропелерiв вiд птахiв.</p>
       </div>
       <div class="timeline-item reveal">
         <div class="timeline-dot">02</div>
@@ -706,12 +737,20 @@ section{position:relative;padding:6rem 2rem}
     <h2 class="section-title reveal">Вiйськовий клас надiйностi</h2>
     <div class="specs-grid">
       <div class="spec-card hud-box reveal">
-        <div class="spec-header">Виявлення</div>
+        <div class="spec-header">Оптика (ПОД)</div>
+        <div class="spec-row"><span class="spec-key">RGB камери</span><span class="spec-val">4x 1920x1080</span></div>
+        <div class="spec-row"><span class="spec-key">Тепловiзори (LWIR)</span><span class="spec-val">4x 640x480</span></div>
+        <div class="spec-row"><span class="spec-key">PTZ камера</span><span class="spec-val">4 Мп, 30x зум</span></div>
         <div class="spec-row"><span class="spec-key">Дальнiсть (день)</span><span class="spec-val">500 м</span></div>
-        <div class="spec-row"><span class="spec-key">Дальнiсть (нiч, IЧ)</span><span class="spec-val">300 м</span></div>
-        <div class="spec-row"><span class="spec-key">Класифiкацiя</span><span class="spec-val">300 м</span></div>
-        <div class="spec-row"><span class="spec-key">Огляд по горизонту</span><span class="spec-val">360</span></div>
-        <div class="spec-row"><span class="spec-key">Огляд по вертикалi</span><span class="spec-val">-5 .. +85</span></div>
+        <div class="spec-row"><span class="spec-key">Огляд</span><span class="spec-val">360 x -5..+85</span></div>
+      </div>
+      <div class="spec-card hud-box reveal">
+        <div class="spec-header">Радар (ПРД)</div>
+        <div class="spec-row"><span class="spec-key">24 ГГц (Infineon)</span><span class="spec-val">2 модулi</span></div>
+        <div class="spec-row"><span class="spec-key">Дальнiсть 24 ГГц</span><span class="spec-val">150-300 м</span></div>
+        <div class="spec-row"><span class="spec-key">60 ГГц (TI IWR6843)</span><span class="spec-val">1 модуль</span></div>
+        <div class="spec-row"><span class="spec-key">Роздiльна здатнiсть</span><span class="spec-val">3.75 см</span></div>
+        <div class="spec-row"><span class="spec-key">Micro-Doppler</span><span class="spec-val">так</span></div>
       </div>
       <div class="spec-card hud-box reveal">
         <div class="spec-header">Перехоплення</div>
@@ -749,8 +788,8 @@ section{position:relative;padding:6rem 2rem}
     <div class="feat-grid">
       <div class="feat-card hud-box reveal">
         <div class="feat-num">01</div>
-        <h3>Мультиспектральне злиття</h3>
-        <p>Оптика, тепловiзор та радар працюють одночасно. Якщо один канал деградує через погоднi умови — iншi компенсують. Виявлення працює в дощ, туман, снiг та повну темряву.</p>
+        <h3>Три пiдсистеми в одному комплексi</h3>
+        <p>Оптична детекцiя (ПОД), радарна детекцiя (ПРД) та сiткомет (ПКП) працюють як єдиний комплекс через Sensor Fusion. Радар дає точну дальнiсть (0.3 м) та швидкiсть, оптика — точнi кути та класифiкацiю. Деградацiя одного каналу компенсується iншим.</p>
       </div>
       <div class="feat-card hud-box reveal">
         <div class="feat-num">02</div>
@@ -764,8 +803,8 @@ section{position:relative;padding:6rem 2rem}
       </div>
       <div class="feat-card hud-box reveal">
         <div class="feat-num">04</div>
-        <h3>Ешелонований захист</h3>
-        <p>Працює разом з РЕБ-системами як додатковий фiзичний рубiж оборони. Там, де глушiння не допомагає — AIShield перехоплює кiнетично.</p>
+        <h3>Всепогодний FMCW-радар</h3>
+        <p>Двохдiапазонний радар (24 ГГц + 60 ГГц) працює в туман, дим, пил та дощ, коли оптика деградує. Micro-Doppler сигнатури пропелерiв пiдтверджують клас цiлi незалежно вiд вiзуального каналу.</p>
       </div>
       <div class="feat-card hud-box reveal">
         <div class="feat-num">05</div>
