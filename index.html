@@ -399,6 +399,153 @@ section{position:relative;padding:6rem 2rem}
 .mode-card h3{font-family:var(--font-mono);font-size:1.1rem;margin-bottom:0.75rem}
 .mode-card p{color:var(--text-secondary);font-size:0.9rem;line-height:1.7}
 
+/* COST / PRICING */
+.cost{background:var(--bg-primary)}
+.cost-toggle{
+  display:flex;
+  gap:0;
+  margin-bottom:2.5rem;
+  border:1px solid var(--border);
+  width:fit-content;
+}
+.cost-toggle button{
+  padding:0.75rem 2rem;
+  font-family:var(--font-mono);
+  font-size:0.85rem;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  background:var(--bg-card);
+  color:var(--text-secondary);
+  border:none;
+  cursor:pointer;
+  transition:all 0.3s;
+}
+.cost-toggle button.active{
+  background:var(--accent);
+  color:var(--bg-primary);
+  font-weight:700;
+}
+.cost-summary{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:1.5rem;
+  margin-bottom:3rem;
+}
+.cost-total-card{
+  background:var(--bg-card);
+  border:1px solid var(--accent);
+  padding:2.5rem 2rem;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+.cost-total-card::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(135deg,rgba(0,255,136,0.05),transparent);
+  pointer-events:none;
+}
+.cost-total-card .cost-batch{
+  font-family:var(--font-mono);
+  font-size:0.75rem;
+  color:var(--accent);
+  text-transform:uppercase;
+  letter-spacing:2px;
+  margin-bottom:0.5rem;
+}
+.cost-total-card .cost-price{
+  font-family:var(--font-mono);
+  font-size:clamp(2.5rem,5vw,3.5rem);
+  font-weight:700;
+  color:var(--text-primary);
+  margin-bottom:0.25rem;
+}
+.cost-total-card .cost-unit{
+  font-size:0.85rem;
+  color:var(--text-secondary);
+}
+.cost-total-card .cost-saving{
+  display:inline-block;
+  margin-top:1rem;
+  font-family:var(--font-mono);
+  font-size:0.8rem;
+  color:var(--accent);
+  border:1px solid var(--accent);
+  padding:0.3rem 0.8rem;
+  background:var(--accent-glow);
+}
+.cost-breakdown{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:1.5rem;
+  margin-bottom:2.5rem;
+}
+.cost-card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  padding:2rem;
+  transition:border-color 0.3s;
+}
+.cost-card:hover{border-color:var(--accent)}
+.cost-card-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  margin-bottom:1rem;
+  padding-bottom:0.75rem;
+  border-bottom:1px solid var(--border);
+}
+.cost-card-header h3{
+  font-family:var(--font-mono);
+  font-size:0.9rem;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+.cost-card-header .cost-sub-total{
+  font-family:var(--font-mono);
+  font-size:1.1rem;
+  font-weight:700;
+  color:var(--accent);
+}
+.cost-card-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  padding:0.4rem 0;
+  border-bottom:1px solid rgba(30,42,58,0.3);
+  font-size:0.85rem;
+}
+.cost-card-row:last-child{border:none}
+.cost-card-row .cost-item{color:var(--text-secondary)}
+.cost-card-row .cost-val{
+  font-family:var(--font-mono);
+  font-weight:600;
+  color:var(--text-primary);
+  white-space:nowrap;
+}
+.cost-bar{
+  display:flex;
+  height:8px;
+  border-radius:4px;
+  overflow:hidden;
+  gap:2px;
+  margin-bottom:1rem;
+}
+.cost-bar span{
+  height:100%;
+  transition:width 0.6s ease;
+}
+.cost-note{
+  color:var(--text-secondary);
+  font-size:0.8rem;
+  line-height:1.6;
+  font-style:italic;
+  margin-top:1rem;
+  padding:1rem;
+  border-left:2px solid var(--border);
+}
+
 /* INTEGRATION */
 .integration{background:var(--bg-primary)}
 .int-grid{
@@ -576,6 +723,7 @@ section{position:relative;padding:6rem 2rem}
     <li><a href="#how">Як працює</a></li>
     <li><a href="#specs">Характеристики</a></li>
     <li><a href="#features">Можливостi</a></li>
+    <li><a href="#cost">Вартiсть</a></li>
     <li><a href="#modes">Режими</a></li>
     <li><a href="#contact">Контакт</a></li>
   </ul>
@@ -589,6 +737,7 @@ section{position:relative;padding:6rem 2rem}
   <a href="#how">Як працює</a>
   <a href="#specs">Характеристики</a>
   <a href="#features">Можливостi</a>
+  <a href="#cost">Вартiсть</a>
   <a href="#modes">Режими</a>
   <a href="#contact">Контакт</a>
 </div>
@@ -816,6 +965,134 @@ section{position:relative;padding:6rem 2rem}
         <h3>Повна автономнiсть</h3>
         <p>В автоматичному режимi система працює без участi оператора. Виявлення, класифiкацiя та перехоплення вiдбуваються автономно 24/7.</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- COST -->
+<section class="cost specs" id="cost">
+  <div class="container">
+    <div class="section-label reveal">// Собiвартiсть платформи</div>
+    <h2 class="section-title reveal">Розрахункова вартiсть комплекту</h2>
+    <p class="section-desc reveal">
+      Тiльки залiзо та матерiали (BOM). Без розробки, ПЗ, логiстики та нацiнки.
+    </p>
+
+    <!-- TOTALS -->
+    <div class="cost-summary reveal">
+      <div class="cost-total-card hud-box">
+        <div class="cost-batch">Партiя 10 одиниць</div>
+        <div class="cost-price">~$24 000</div>
+        <div class="cost-unit">за 1 комплект</div>
+      </div>
+      <div class="cost-total-card hud-box">
+        <div class="cost-batch">Партiя 100 одиниць</div>
+        <div class="cost-price">~$16 400</div>
+        <div class="cost-unit">за 1 комплект</div>
+        <div class="cost-saving">-32% на одиницю</div>
+      </div>
+    </div>
+
+    <!-- COST BAR -->
+    <div class="reveal">
+      <div class="cost-bar">
+        <span style="width:56%;background:var(--accent)" title="ПОД"></span>
+        <span style="width:3%;background:#00cc6a" title="ПРД"></span>
+        <span style="width:15%;background:var(--warning)" title="ПКП"></span>
+        <span style="width:11%;background:#6688ff" title="ЦБУ"></span>
+        <span style="width:8%;background:#cc44ff" title="Платформа"></span>
+        <span style="width:5%;background:var(--text-secondary)" title="Iнше"></span>
+        <span style="width:4%;background:var(--border)" title="Зборка"></span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:2.5rem;font-size:0.75rem;font-family:var(--font-mono);">
+        <span><span style="color:var(--accent)">&#9632;</span> ПОД 56%</span>
+        <span><span style="color:#00cc6a">&#9632;</span> ПРД 3%</span>
+        <span><span style="color:var(--warning)">&#9632;</span> ПКП 15%</span>
+        <span><span style="color:#6688ff">&#9632;</span> ЦБУ 11%</span>
+        <span><span style="color:#cc44ff">&#9632;</span> Платформа 8%</span>
+        <span><span style="color:var(--text-secondary)">&#9632;</span> HMI 5%</span>
+        <span><span style="color:var(--border)">&#9632;</span> Зборка 4%</span>
+      </div>
+    </div>
+
+    <!-- BREAKDOWN -->
+    <div class="cost-breakdown">
+      <!-- ПОД -->
+      <div class="cost-card hud-box reveal">
+        <div class="cost-card-header">
+          <h3>ПОД — Оптика</h3>
+          <span class="cost-sub-total" data-10="$12 600" data-100="$9 200">$9 200</span>
+        </div>
+        <div class="cost-card-row"><span class="cost-item">RGB камери 4K x4</span><span class="cost-val" data-10="$2 800" data-100="$2 200">$2 200</span></div>
+        <div class="cost-card-row"><span class="cost-item">Тепловiзори LWIR 640x512 x4</span><span class="cost-val" data-10="$8 800" data-100="$6 000">$6 000</span></div>
+        <div class="cost-card-row"><span class="cost-item">PTZ камера 4Мп 30x</span><span class="cost-val" data-10="$1 000" data-100="$750">$750</span></div>
+        <div class="cost-card-row"><span class="cost-item">Комутатор 10GbE</span><span class="cost-val" data-10="$400" data-100="$300">$300</span></div>
+        <div class="cost-card-row"><span class="cost-item">NVMe SSD 1 TБ + кабелi</span><span class="cost-val" data-10="$400" data-100="$250">$250</span></div>
+      </div>
+
+      <!-- ПРД -->
+      <div class="cost-card hud-box reveal">
+        <div class="cost-card-header">
+          <h3>ПРД — Радар</h3>
+          <span class="cost-sub-total" data-10="$710" data-100="$410">$410</span>
+        </div>
+        <div class="cost-card-row"><span class="cost-item">Infineon BGT24MTR12 x2</span><span class="cost-val" data-10="$360" data-100="$200">$200</span></div>
+        <div class="cost-card-row"><span class="cost-item">TI IWR6843AOP x1</span><span class="cost-val" data-10="$250" data-100="$150">$150</span></div>
+        <div class="cost-card-row"><span class="cost-item">Кабелi + кожухи</span><span class="cost-val" data-10="$100" data-100="$60">$60</span></div>
+      </div>
+
+      <!-- ПКП -->
+      <div class="cost-card hud-box reveal">
+        <div class="cost-card-header">
+          <h3>ПКП — Сiткомет</h3>
+          <span class="cost-sub-total" data-10="$3 990" data-100="$2 358">$2 358</span>
+        </div>
+        <div class="cost-card-row"><span class="cost-item">Пусковi модулi CNC x8</span><span class="cost-val" data-10="$1 200" data-100="$480">$480</span></div>
+        <div class="cost-card-row"><span class="cost-item">Сервоприводи BLDC x8</span><span class="cost-val" data-10="$1 600" data-100="$1 120">$1 120</span></div>
+        <div class="cost-card-row"><span class="cost-item">Картриджi кевлар 3x3м x8</span><span class="cost-val" data-10="$320" data-100="$200">$200</span></div>
+        <div class="cost-card-row"><span class="cost-item">Пнемосистема + клапани</span><span class="cost-val" data-10="$870" data-100="$558">$558</span></div>
+      </div>
+
+      <!-- ЦБУ -->
+      <div class="cost-card hud-box reveal">
+        <div class="cost-card-header">
+          <h3>ЦБУ — Контролер</h3>
+          <span class="cost-sub-total" data-10="$2 500" data-100="$1 885">$1 885</span>
+        </div>
+        <div class="cost-card-row"><span class="cost-item">NVIDIA Jetson AGX Orin 64GB</span><span class="cost-val" data-10="$1 900" data-100="$1 500">$1 500</span></div>
+        <div class="cost-card-row"><span class="cost-item">STM32H7 резервний</span><span class="cost-val" data-10="$50" data-100="$35">$35</span></div>
+        <div class="cost-card-row"><span class="cost-item">Суперконденсатори ІБЖ</span><span class="cost-val" data-10="$120" data-100="$80">$80</span></div>
+        <div class="cost-card-row"><span class="cost-item">DC-DC + корпус IP65 + iнше</span><span class="cost-val" data-10="$430" data-100="$270">$270</span></div>
+      </div>
+
+      <!-- Платформа -->
+      <div class="cost-card hud-box reveal">
+        <div class="cost-card-header">
+          <h3>Платформа</h3>
+          <span class="cost-sub-total" data-10="$2 300" data-100="$1 240">$1 240</span>
+        </div>
+        <div class="cost-card-row"><span class="cost-item">Рама AS-MFR-100 (Al 6061)</span><span class="cost-val" data-10="$1 200" data-100="$600">$600</span></div>
+        <div class="cost-card-row"><span class="cost-item">Адаптер ТЗ класу A</span><span class="cost-val" data-10="$500" data-100="$250">$250</span></div>
+        <div class="cost-card-row"><span class="cost-item">MIL-DTL роз'єми x3</span><span class="cost-val" data-10="$360" data-100="$240">$240</span></div>
+        <div class="cost-card-row"><span class="cost-item">Замки + вiброiзолятори</span><span class="cost-val" data-10="$240" data-100="$150">$150</span></div>
+      </div>
+
+      <!-- HMI + Сборка -->
+      <div class="cost-card hud-box reveal">
+        <div class="cost-card-header">
+          <h3>HMI + Зборка</h3>
+          <span class="cost-sub-total" data-10="$1 960" data-100="$1 335">$1 335</span>
+        </div>
+        <div class="cost-card-row"><span class="cost-item">Захищений планшет 10"</span><span class="cost-val" data-10="$800" data-100="$600">$600</span></div>
+        <div class="cost-card-row"><span class="cost-item">RAM mount + кейс IP67</span><span class="cost-val" data-10="$260" data-100="$185">$185</span></div>
+        <div class="cost-card-row"><span class="cost-item">Кабельнi джгути + живлення</span><span class="cost-val" data-10="$400" data-100="$250">$250</span></div>
+        <div class="cost-card-row"><span class="cost-item">Зборка та контроль якостi</span><span class="cost-val" data-10="$500" data-100="$300">$300</span></div>
+      </div>
+    </div>
+
+    <div class="cost-note reveal">
+      Топ-5 компонентiв за вартiстю: тепловiзори (37%), RGB камери (13%), Jetson Orin (9%), сервоприводи (7%), рама (4%) — разом ~70% собiвартостi.
+      Мiнiмальна конфiгурацiя (2 тепловiзори, Orin NX, 4 сiткомети, @100 од.): ~$11 000.
     </div>
   </div>
 </section>
